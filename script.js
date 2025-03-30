@@ -140,9 +140,12 @@ document.addEventListener('DOMContentLoaded', function() {
                 input.classList.add('error');
                 
                 // Show validation error message if it exists
-                const errorElement = input.closest('.form-group').querySelector('.validation-error');
-                if (errorElement) {
-                    errorElement.classList.add('show');
+                const formGroup = input.closest('.form-group');
+                if (formGroup) {
+                    const errorElement = formGroup.querySelector('.validation-error');
+                    if (errorElement) {
+                        errorElement.classList.add('show');
+                    }
                 }
                 
                 isValid = false;
@@ -150,9 +153,12 @@ document.addEventListener('DOMContentLoaded', function() {
                 input.classList.remove('error');
                 
                 // Hide validation error message if it exists
-                const errorElement = input.closest('.form-group').querySelector('.validation-error');
-                if (errorElement) {
-                    errorElement.classList.remove('show');
+                const formGroup = input.closest('.form-group');
+                if (formGroup) {
+                    const errorElement = formGroup.querySelector('.validation-error');
+                    if (errorElement) {
+                        errorElement.classList.remove('show');
+                    }
                 }
             }
         });
@@ -162,9 +168,12 @@ document.addEventListener('DOMContentLoaded', function() {
             const confirmCheckbox = document.getElementById('confirmInfo');
             if (confirmCheckbox && !confirmCheckbox.checked) {
                 confirmCheckbox.classList.add('error');
-                const errorElement = confirmCheckbox.closest('.checkbox-group').querySelector('.validation-error');
-                if (errorElement) {
-                    errorElement.classList.add('show');
+                const checkboxGroup = confirmCheckbox.closest('.checkbox-group');
+                if (checkboxGroup) {
+                    const errorElement = checkboxGroup.querySelector('.validation-error');
+                    if (errorElement) {
+                        errorElement.classList.add('show');
+                    }
                 }
                 isValid = false;
             }
@@ -216,21 +225,76 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Initialize the signature pad
     function initializeSignaturePad() {
+        console.log("Initializing signature pad...");
         const canvas = document.getElementById('signatureCanvas');
-        if (canvas) {
+        
+        if (!canvas) {
+            console.error("Signature canvas element not found");
+            return;
+        }
+        
+        try {
+            // Create new signature pad instance
             signaturePad = new SignaturePad(canvas, {
                 backgroundColor: 'rgba(255, 255, 255, 0)',
-                penColor: 'black'
+                penColor: 'black',
+                minWidth: 1,
+                maxWidth: 3
             });
+            
+            console.log("Signature pad initialized successfully");
             
             // Add clear button functionality
             const clearButton = document.getElementById('clearSignature');
             if (clearButton) {
                 clearButton.addEventListener('click', function() {
                     signaturePad.clear();
+                    console.log("Signature cleared");
                 });
+            } else {
+                console.warn("Clear signature button not found");
             }
+            
+            // Handle window resize to maintain signature pad
+            window.addEventListener('resize', resizeSignaturePad);
+            
+            // Initial resize
+            resizeSignaturePad();
+        } catch (error) {
+            console.error("Error initializing signature pad:", error);
         }
+    }
+    
+    // Function to resize signature pad canvas when window is resized
+    function resizeSignaturePad() {
+        if (!signaturePad || !document.getElementById('signatureCanvas')) {
+            return;
+        }
+        
+        const canvas = document.getElementById('signatureCanvas');
+        const ratio = Math.max(window.devicePixelRatio || 1, 1);
+        
+        // Get the parent container width
+        const parent = canvas.parentElement;
+        if (!parent) return;
+        
+        // Set canvas width to parent width minus any padding
+        const containerWidth = parent.clientWidth;
+        const containerHeight = canvas.offsetHeight;
+        
+        // Set canvas display dimensions
+        canvas.width = containerWidth * ratio;
+        canvas.height = containerHeight * ratio;
+        canvas.style.width = `${containerWidth}px`;
+        canvas.style.height = `${containerHeight}px`;
+        
+        // Scale the context
+        const context = canvas.getContext('2d');
+        context.scale(ratio, ratio);
+        
+        // Clear the canvas and redraw the signature
+        signaturePad.clear();
+        console.log("Signature pad resized to", containerWidth, "x", containerHeight);
     }
     
     // Set up payment handling for next button in Step 2
@@ -365,7 +429,14 @@ document.addEventListener('DOMContentLoaded', function() {
             
             try {
                 // Get payment data from localStorage
-                const paymentData = JSON.parse(localStorage.getItem('boc3_payment_data'));
+                let paymentData;
+                try {
+                    paymentData = JSON.parse(localStorage.getItem('boc3_payment_data'));
+                } catch (parseError) {
+                    console.error("Error parsing payment data from localStorage:", parseError);
+                    paymentData = null;
+                }
+                
                 if (!paymentData || !paymentData.id) {
                     alert('Payment information is missing. Please complete the payment step first.');
                     
@@ -378,29 +449,29 @@ document.addEventListener('DOMContentLoaded', function() {
                     return;
                 }
                 
-                // Get form data
+                // Get form data - with null checks for all form elements
                 const formData = {
-                    usdot: document.getElementById('usdot').value,
-                    ownerName: document.getElementById('ownerName').value,
-                    email: document.getElementById('email').value,
-                    phone: document.getElementById('phone').value,
-                    companyName: document.getElementById('companyName').value,
+                    usdot: document.getElementById('usdot')?.value || '',
+                    ownerName: document.getElementById('ownerName')?.value || '',
+                    email: document.getElementById('email')?.value || '',
+                    phone: document.getElementById('phone')?.value || '',
+                    companyName: document.getElementById('companyName')?.value || '',
                     address: {
-                        street: document.getElementById('streetAddress').value,
-                        city: document.getElementById('city').value,
-                        state: document.getElementById('state').value,
-                        zip: document.getElementById('zipCode').value
+                        street: document.getElementById('streetAddress')?.value || '',
+                        city: document.getElementById('city')?.value || '',
+                        state: document.getElementById('state')?.value || '',
+                        zip: document.getElementById('zipCode')?.value || ''
                     },
                     initials: {
-                        initials1: document.getElementById('initials1') ? document.getElementById('initials1').value : '',
-                        initials2: document.getElementById('initials2') ? document.getElementById('initials2').value : '',
-                        initials3: document.getElementById('initials3') ? document.getElementById('initials3').value : '',
-                        initials4: document.getElementById('initials4') ? document.getElementById('initials4').value : '',
-                        initials5: document.getElementById('initials5') ? document.getElementById('initials5').value : ''
+                        initials1: document.getElementById('initials1')?.value || '',
+                        initials2: document.getElementById('initials2')?.value || '',
+                        initials3: document.getElementById('initials3')?.value || '',
+                        initials4: document.getElementById('initials4')?.value || '',
+                        initials5: document.getElementById('initials5')?.value || ''
                     },
                     preferences: {
-                        emailNotifications: document.getElementById('emailNotifications') ? document.getElementById('emailNotifications').checked : false,
-                        marketingEmails: document.getElementById('marketingEmails') ? document.getElementById('marketingEmails').checked : false
+                        emailNotifications: document.getElementById('emailNotifications')?.checked || false,
+                        marketingEmails: document.getElementById('marketingEmails')?.checked || false
                     },
                     payment: paymentData,
                     submittedDate: new Date().toISOString()
