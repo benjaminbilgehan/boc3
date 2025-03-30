@@ -122,6 +122,14 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Show step function
     function showStep(index) {
+        console.log(`Showing step ${index}`);
+        
+        // Validate index to ensure it's within valid range
+        if (index < 0 || index >= formSteps.length) {
+            console.error(`Invalid step index: ${index}`);
+            return;
+        }
+        
         // Hide all steps
         formSteps.forEach(step => step.classList.add('hidden'));
         
@@ -137,15 +145,41 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
         
-        // Initialize card element when showing payment step
-        if (index === 1) { // Step 2 has index 1
+        // Special initialization for different steps
+        if (index === 1) { // Step 2 (Payment)
             console.log("Payment step shown, initializing card element...");
             // Slight delay to ensure the DOM is fully rendered
             setTimeout(initializeCardElement, 200);
+        } else if (index === 2) { // Step 3 (Submit)
+            console.log("Submit step shown, initializing signature pad...");
+            // Initialize signature pad if needed
+            if (typeof signaturePad === 'undefined' || !signaturePad) {
+                initializeSignaturePad();
+            }
         }
         
         // Update the current step
         currentStep = index;
+        console.log(`Current step is now ${currentStep}`);
+    }
+    
+    // Initialize the signature pad
+    function initializeSignaturePad() {
+        const canvas = document.getElementById('signatureCanvas');
+        if (canvas) {
+            signaturePad = new SignaturePad(canvas, {
+                backgroundColor: 'rgba(255, 255, 255, 0)',
+                penColor: 'black'
+            });
+            
+            // Add clear button functionality
+            const clearButton = document.getElementById('clearSignature');
+            if (clearButton) {
+                clearButton.addEventListener('click', function() {
+                    signaturePad.clear();
+                });
+            }
+        }
     }
     
     // Setup card formatting
@@ -293,18 +327,6 @@ document.addEventListener('DOMContentLoaded', function() {
                         console.log("Simulated payment successful:", result.paymentIntent.id);
                     }
                     
-                    // Store payment info for later use
-                    const paymentInfo = {
-                        id: result.paymentIntent.id,
-                        last4: clientSecret ? result.paymentMethod?.card?.last4 : result.paymentMethod.card.last4,
-                        brand: clientSecret ? result.paymentMethod?.card?.brand : result.paymentMethod.card.brand,
-                        exp_month: clientSecret ? result.paymentMethod?.card?.exp_month : result.paymentMethod.card.exp_month,
-                        exp_year: clientSecret ? result.paymentMethod?.card?.exp_year : result.paymentMethod.card.exp_year,
-                        amount: amount / 100, // Convert to dollars
-                        currency: currency
-                    };
-                    localStorage.setItem('boc3_payment_data', JSON.stringify(paymentInfo));
-                    
                     // Mark payment as processed
                     paymentProcessed = true;
                     
@@ -313,40 +335,51 @@ document.addEventListener('DOMContentLoaded', function() {
                     
                     // Show success message
                     const cardErrorElement = document.getElementById('card-errors');
-                    cardErrorElement.textContent = clientSecret 
-                        ? 'Payment processed successfully!'
-                        : 'Payment processed successfully! (TEST MODE)';
-                    cardErrorElement.classList.add('success');
-                    cardErrorElement.classList.remove('error');
+                    cardErrorElement.textContent = result.error ? result.error.message : 'Payment processed successfully!';
+                    cardErrorElement.classList.add(result.error ? 'error' : 'success');
+                    cardErrorElement.classList.remove(result.error ? 'success' : 'error');
                     
-                    // Proceed to next step
+                    // Store payment info for later use
+                    const paymentInfo = {
+                        id: result.paymentIntent.id,
+                        last4: result.paymentMethod?.card?.last4 || '0000',
+                        brand: result.paymentMethod?.card?.brand || 'test',
+                        exp_month: result.paymentMethod?.card?.exp_month || '12',
+                        exp_year: result.paymentMethod?.card?.exp_year || '2099',
+                        amount: result.paymentIntent.amount,
+                        currency: result.paymentIntent.currency,
+                        status: result.paymentIntent.status,
+                        created: new Date().toISOString()
+                    };
+                    
+                    localStorage.setItem('boc3_payment_data', JSON.stringify(paymentInfo));
+                    
+                    // Proceed to next step after a short delay
                     setTimeout(() => {
-                        currentStep++;
-                        updateForm();
-                        
-                        // Re-enable button
+                        // Re-enable the button
                         paymentNextBtn.disabled = false;
                         paymentNextBtn.textContent = 'Next';
-                    }, 1000);
-                    
+                        
+                        // Move to next step
+                        currentStep++;
+                        showStep(currentStep);
+                    }, 1500);
                 } catch (error) {
-                    console.error('Payment processing error:', error);
+                    console.error('Payment error:', error);
                     
-                    // Show error
-                    const errorElement = document.getElementById('card-errors');
-                    errorElement.textContent = error.message || 'An error occurred while processing your payment. Please try again.';
-                    errorElement.classList.add('show');
+                    // Show error message
+                    const displayError = document.getElementById('card-errors');
+                    displayError.textContent = error.message || 'An error occurred while processing your payment.';
+                    displayError.classList.add('show');
                     
-                    // Re-enable button
+                    // Re-enable the button
                     paymentNextBtn.disabled = false;
                     paymentNextBtn.textContent = 'Next';
                 }
             } else {
-                // If payment already processed, just go to next step
-                if (validateStep(currentStep)) {
-                    currentStep++;
-                    updateForm();
-                }
+                // If already processed, just go to next step
+                currentStep++;
+                showStep(currentStep);
             }
         });
     }
@@ -476,16 +509,39 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // Form submission
-    form.addEventListener('submit', async (e) => {
-        e.preventDefault();
-        if (validateStep(currentStep)) {
+    // Handle form submission
+    if (form) {
+        form.addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            // Validate current step before submission
+            if (!validateStep(currentStep)) {
+                return;
+            }
+            
+            // Disable submit button to prevent multiple submissions
             const submitBtn = document.querySelector('.submit-btn');
-            submitBtn.disabled = true;
-            submitBtn.textContent = 'Processing...';
+            if (submitBtn) {
+                submitBtn.disabled = true;
+                submitBtn.textContent = 'Processing...';
+            }
             
             try {
-                // Collect form data
+                // Get payment data from localStorage
+                const paymentData = JSON.parse(localStorage.getItem('boc3_payment_data'));
+                if (!paymentData || !paymentData.id) {
+                    alert('Payment information is missing. Please complete the payment step first.');
+                    
+                    // Re-enable submit button
+                    if (submitBtn) {
+                        submitBtn.disabled = false;
+                        submitBtn.textContent = 'Submit';
+                    }
+                    
+                    return;
+                }
+                
+                // Get form data
                 const formData = {
                     usdot: document.getElementById('usdot').value,
                     ownerName: document.getElementById('ownerName').value,
@@ -498,119 +554,107 @@ document.addEventListener('DOMContentLoaded', function() {
                         state: document.getElementById('state').value,
                         zip: document.getElementById('zipCode').value
                     },
-                    signature: document.getElementById('signatureCanvas').toDataURL(),
-                    emailConsent: document.getElementById('emailNotifications').checked,
-                    marketingConsent: document.getElementById('marketingEmails').checked
+                    initials: {
+                        initials1: document.getElementById('initials1').value,
+                        initials2: document.getElementById('initials2').value,
+                        initials3: document.getElementById('initials3').value,
+                        initials4: document.getElementById('initials4').value,
+                        initials5: document.getElementById('initials5').value
+                    },
+                    preferences: {
+                        emailNotifications: document.getElementById('emailNotifications').checked,
+                        marketingEmails: document.getElementById('marketingEmails').checked
+                    },
+                    payment: paymentData,
+                    submittedDate: new Date().toISOString()
                 };
                 
-                // Store form data in localStorage for retrieval after payment
-                localStorage.setItem('boc3_form_data', JSON.stringify(formData));
-                
-                // Get payment data from localStorage (set during payment step)
-                const paymentData = JSON.parse(localStorage.getItem('boc3_payment_data') || '{}');
-                
-                // Verify payment has been processed
-                if (!paymentData.id) {
-                    alert('Payment information is missing. Please go back and complete the payment step.');
-                    submitBtn.disabled = false;
-                    submitBtn.textContent = 'SUBMIT';
+                // Get signature data
+                if (signaturePad && !signaturePad.isEmpty()) {
+                    formData.signatureDataUrl = signaturePad.toDataURL();
+                } else {
+                    alert('Please sign the form before submitting.');
+                    
+                    // Re-enable submit button
+                    if (submitBtn) {
+                        submitBtn.disabled = false;
+                        submitBtn.textContent = 'Submit';
+                    }
+                    
                     return;
                 }
                 
-                // Generate PDF first
+                // Generate PDF
                 const pdfDataUri = await generatePDF(formData);
                 
-                // Send email with PDF attached
+                // Send email with PDF
                 await sendEmailWithPDF(formData, pdfDataUri);
                 
-                // Create a custom FormData object for Supabase upload
-                const supabaseFormData = {
-                    get: function(key) {
-                        switch(key) {
-                            case 'usdot': return formData.usdot;
-                            case 'companyName': return formData.companyName;
-                            case 'ownerName': return formData.ownerName;
-                            case 'email': return formData.email;
-                            case 'phone': return formData.phone;
-                            default: return '';
-                        }
-                    }
-                };
-                
-                // Log the data being sent to Supabase
-                console.log("Sending data to Supabase:", {
-                    usdot: supabaseFormData.get('usdot'),
-                    companyName: supabaseFormData.get('companyName'),
-                    ownerName: supabaseFormData.get('ownerName'),
-                    email: supabaseFormData.get('email'),
-                    phone: supabaseFormData.get('phone')
-                });
-                
-                // Upload PDF to Supabase in background with payment info
+                // Upload PDF to Supabase
                 try {
-                    // Add a delay to ensure supabase client is fully initialized
-                    setTimeout(async () => {
-                        try {
-                            const uploadResult = await uploadPDFToCloud(supabaseFormData, pdfDataUri);
-                            console.log("PDF upload result:", uploadResult);
-                            
-                            // Mark as paid in Supabase
-                            if (uploadResult) {
-                                try {
-                                    await updatePaymentStatus(formData.usdot, paymentData);
-                                } catch (paymentError) {
-                                    console.error("Error updating payment status:", paymentError);
-                                }
-                            }
-                        } catch (delayedError) {
-                            console.error("Error in delayed PDF upload:", delayedError);
-                        }
-                    }, 1000);
-                } catch (error) {
-                    console.error("Error setting up PDF upload:", error);
-                    // Continue with form submission even if upload fails
+                    await uploadPDFToCloud(formData, pdfDataUri);
+                    
+                    // Update payment status in Supabase
+                    await updatePaymentStatus(formData.usdot, paymentData);
+                } catch (uploadError) {
+                    console.error('Error uploading to Supabase:', uploadError);
+                    // Continue with submission even if upload fails
                 }
                 
-                // Show success message with download link
-                const formStep = document.getElementById('step3');
+                // Replace form with success message
                 const successMessage = document.createElement('div');
-                successMessage.className = 'bg-[#d4edda] p-4 rounded-lg mb-4 mt-4 text-[#155724] text-center';
-                
-                // Create a download link for the PDF
-                const downloadLink = document.createElement('a');
-                downloadLink.href = pdfDataUri;
-                downloadLink.download = `BOC3_Filing_${formData.usdot}.pdf`;
-                downloadLink.className = 'inline-block bg-[#4CAF50] hover:bg-[#45a049] text-white font-bold py-2 px-6 rounded mt-2';
-                downloadLink.innerHTML = '<i class="fas fa-download mr-2"></i> Download PDF';
-                
-                // Show payment information in success message
-                const cardInfo = document.createElement('div');
-                cardInfo.className = 'mt-2 text-gray-600';
-                cardInfo.innerHTML = `
-                    <p>Payment processed with card ending in ${paymentData.last4 || '****'}</p>
-                    <p>Transaction ID: ${paymentData.id || 'Unknown'}</p>
-                `;
-                
+                successMessage.className = 'success-message';
                 successMessage.innerHTML = `
-                    <p class="mb-3"><i class="fas fa-check-circle mr-2"></i> Your BOC-3 filing has been completed successfully!</p>
-                    <p>We've received your payment and will process your filing immediately.</p>
-                    <p>A confirmation email with your PDF has been sent to ${formData.email}.</p>
+                    <h2>Thank You!</h2>
+                    <p>Your BOC-3 filing has been submitted successfully.</p>
+                    <p>A confirmation email has been sent to <strong>${formData.email}</strong>.</p>
+                    <p>Your USDOT#: <strong>${formData.usdot}</strong></p>
+                    <div id="redirect-timer">You will be redirected to the homepage in <span id="countdown">5</span> seconds.</div>
+                    <button id="skip-button">Skip to Homepage</button>
                 `;
-                successMessage.appendChild(downloadLink);
-                successMessage.appendChild(cardInfo);
                 
-                // Replace form content with success message
-                formStep.innerHTML = '';
-                formStep.appendChild(successMessage);
+                form.parentNode.replaceChild(successMessage, form);
                 
+                // Add download PDF button
+                const downloadBtn = document.createElement('a');
+                downloadBtn.href = pdfDataUri;
+                downloadBtn.download = `BOC3_Filing_${formData.usdot}.pdf`;
+                downloadBtn.className = 'download-btn';
+                downloadBtn.innerHTML = '<i class="fas fa-download"></i> Download Your BOC-3 PDF';
+                successMessage.appendChild(downloadBtn);
+                
+                // Set up countdown timer
+                let countdown = 5;
+                const countdownEl = document.getElementById('countdown');
+                const countdownInterval = setInterval(() => {
+                    countdown--;
+                    if (countdownEl) countdownEl.textContent = countdown;
+                    if (countdown <= 0) {
+                        clearInterval(countdownInterval);
+                        window.location.href = '/';
+                    }
+                }, 1000);
+                
+                // Set up skip button
+                const skipButton = document.getElementById('skip-button');
+                if (skipButton) {
+                    skipButton.addEventListener('click', () => {
+                        clearInterval(countdownInterval);
+                        window.location.href = '/';
+                    });
+                }
             } catch (error) {
-                console.error('Error:', error);
-                alert('An error occurred while processing your submission. Please try again.');
-                submitBtn.disabled = false;
-                submitBtn.textContent = 'SUBMIT';
+                console.error('Submission error:', error);
+                alert('There was an error submitting your form. Please try again later.');
+                
+                // Re-enable submit button
+                if (submitBtn) {
+                    submitBtn.disabled = false;
+                    submitBtn.textContent = 'Submit';
+                }
             }
-        }
-    });
+        });
+    }
 
     // Handle billing address toggle
     const sameAddressCheckbox = document.getElementById('sameAsPhysical');
