@@ -508,3 +508,27 @@ button {
     border: 1px solid rgba(40, 167, 69, 0.3);
     animation: fadeIn 0.3s ease-in-out;
 }
+
+/* Footer styles */
+footer {
+    padding: 1rem 0;
+    text-align: center;
+    font-size: 0.8rem;
+    color: #666;
+    margin-top: 2rem;
+    border-top: 1px solid #eee;
+    background-color: #f9f9f9;
+}
+
+footer p {
+    margin: 0.25rem 0;
+}
+
+/* Version display that appears on hover */
+footer:hover::after {
+    content: attr(data-version) " | " attr(data-environment);
+    display: block;
+    font-size: 0.7rem;
+    color: #999;
+    margin-top: 0.5rem;
+}

@@ -1,4 +1,15 @@
 document.addEventListener('DOMContentLoaded', function() {
+    // Use the app version from version.js if available
+    const appVersion = window.APP_VERSION || {
+        version: '1.0.0',
+        build: Date.now(),
+        environment: window.location.hostname.includes('localhost') ? 'development' : 'production',
+        gitCommit: 'initial'
+    };
+    
+    // Log version information
+    console.log('Application initialized with version:', appVersion.version);
+    
     const startFilingBtn = document.querySelector('.start-filing-btn');
     const formContainer = document.querySelector('.form-container');
     const steps = document.querySelectorAll('.step');

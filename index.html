@@ -20,6 +20,8 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <!-- Add Supabase JS -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <!-- Version tracking script -->
+    <script src="version.js"></script>
 </head>
 <body>
     <nav class="navbar">
@@ -265,6 +267,34 @@
         </form>
     </div>
 
+    <!-- Footer with version info -->
+    <footer class="py-4 text-center text-gray-500 text-sm mt-8 border-t border-gray-200">
+        <div class="container mx-auto">
+            <p>Version <span id="version-number">1.0.0</span> - Build <span id="build-date">March 30, 2025</span></p>
+            <p class="mt-1">© 2025 BOC-3 Filing Service. All rights reserved.</p>
+        </div>
+    </footer>
+
     <script src="script.js"></script>
+    <script>
+        // Update version info from version.js
+        if (window.APP_VERSION) {
+            document.getElementById('version-number').textContent = APP_VERSION.version;
+            document.getElementById('build-date').textContent = new Date(APP_VERSION.buildTime).toLocaleDateString('en-US', {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric'
+            });
+            
+            // Add detailed version info as data attributes
+            const footer = document.querySelector('footer');
+            if (footer) {
+                footer.dataset.version = APP_VERSION.version;
+                footer.dataset.environment = APP_VERSION.environment;
+                footer.dataset.buildTime = APP_VERSION.buildTime;
+                footer.dataset.features = APP_VERSION.features.join(', ');
+            }
+        }
+    </script>
 </body>
 </html>
