@@ -14,6 +14,9 @@
     { "src": "/(.*)", "dest": "/$1" }
   ],
   "env": {
-    "STRIPE_SECRET_KEY": "@stripe_secret_key"
+    "STRIPE_SECRET_KEY": "sk_test_51LpCLtGInLr2DrSTuYYYSKMzwjs5DNF3WHPnnKA1UtDdMdRyc8s23yEzliwhZgjCFsn5Prz235YoivAiso2dwybz008nf7VPA9",
+    "STRIPE_PUBLIC_KEY": "pk_test_51LpCLtGInLr2DrSTQ8DDr3lvjrydsoKAHm2TRyXrbIHNlex0KAhZ6EhAOKGhStJgEocNVsblksuwgZ0ngd6ojvGr00Y59GqYhk",
+    "SUPABASE_URL": "https://fedrwwuqzgdogvwmlugv.supabase.co",
+    "SUPABASE_ANON_KEY": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZlZHJ3d3Vxemdkb2d2d21sdWd2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDMzNDc4MDgsImV4cCI6MjA1ODkyMzgwOH0.yUbMKtFXI2l1tGdz3zvMzRWYzvwI66LeeBFzmYV-sUk"
   }
 } 

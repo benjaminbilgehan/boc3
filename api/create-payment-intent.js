@@ -1,5 +1,5 @@
 // This is a Vercel serverless function that handles creating payment intents
-const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
+const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY || 'sk_test_51LpCLtGInLr2DrSTuYYYSKMzwjs5DNF3WHPnnKA1UtDdMdRyc8s23yEzliwhZgjCFsn5Prz235YoivAiso2dwybz008nf7VPA9');
 
 module.exports = async (req, res) => {
   if (req.method !== 'POST') {
