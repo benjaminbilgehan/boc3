@@ -1,0 +1,510 @@
+:root {
+    --primary-color: #4CAF50;
+    --secondary-color: #45a049;
+    --text-color: #333;
+    --background-color: #f4f4f4;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Arial', sans-serif;
+    line-height: 1.6;
+    color: var(--text-color);
+    background-color: var(--background-color);
+}
+
+.navbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem 2rem;
+    background-color: white;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+
+.nav-links {
+    display: flex;
+    list-style: none;
+    gap: 2rem;
+}
+
+.nav-links a {
+    text-decoration: none;
+    color: var(--text-color);
+}
+
+.start-filing-btn {
+    background-color: var(--primary-color);
+    color: white;
+    padding: 0.5rem 1rem;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.form-container {
+    max-width: 800px;
+    margin: 2rem auto;
+    padding: 2rem;
+    background-color: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
+
+.form-steps {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 2rem;
+}
+
+.step {
+    flex: 1;
+    text-align: center;
+    padding: 1rem;
+    background-color: #eee;
+    text-decoration: none;
+    color: var(--text-color);
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.step:hover {
+    background-color: #ddd;
+}
+
+.step.active {
+    background-color: var(--primary-color);
+    color: white;
+}
+
+.step.active:hover {
+    background-color: var(--secondary-color);
+}
+
+.form-group {
+    margin-bottom: 1rem;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 0.5rem;
+}
+
+.form-group input {
+    width: 100%;
+    padding: 0.75rem;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 1rem;
+}
+
+.form-group input:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 2px rgba(76, 175, 80, 0.1);
+}
+
+.form-group label::after {
+    content: "*";
+    color: #dc3545;
+    margin-left: 2px;
+}
+
+.form-group select {
+    width: 100%;
+    padding: 0.75rem;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 1rem;
+    appearance: auto;
+}
+
+.form-group select:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 2px rgba(76, 175, 80, 0.1);
+}
+
+.button-group {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 2rem;
+}
+
+button {
+    padding: 0.5rem 1rem;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.next-btn, .submit-btn {
+    background-color: var(--primary-color);
+    color: white;
+    padding: 0.5rem 1rem;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 1rem;
+    transition: background-color 0.3s ease;
+}
+
+.next-btn:hover, .submit-btn:hover {
+    background-color: var(--secondary-color);
+}
+
+.prev-btn {
+    background-color: #ddd;
+}
+
+.hidden {
+    display: none;
+}
+
+.address-group {
+    display: grid;
+    grid-template-columns: 2fr 1fr 1fr;
+    gap: 1rem;
+}
+
+.checkbox-group {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.5rem;
+}
+
+.checkbox-group input[type="checkbox"] {
+    width: auto;
+    margin-top: 0.25rem;
+}
+
+.checkbox-group label {
+    font-size: 0.9rem;
+    color: #666;
+}
+
+.card-details {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+}
+
+.total-price {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem;
+    background-color: #f8f9fa;
+    border-radius: 4px;
+    margin: 1.5rem 0;
+    font-size: 1.2rem;
+    font-weight: bold;
+}
+
+.price {
+    color: var(--primary-color);
+}
+
+/* Style for card input fields */
+#cardNumber {
+    letter-spacing: 1px;
+}
+
+#expiry, #cvv {
+    width: 100%;
+}
+
+/* Add some spacing between sections */
+.form-step {
+    margin-bottom: 2rem;
+}
+
+/* Style for billing address section */
+#billingAddress {
+    margin-top: 1rem;
+    padding-top: 1rem;
+    border-top: 1px solid #eee;
+}
+
+.initial-group {
+    display: flex;
+    align-items: flex-start;
+    margin-bottom: 1rem;
+    gap: 1rem;
+}
+
+.initials-input {
+    width: 60px !important;
+    height: 40px;
+    text-align: center;
+    text-transform: uppercase;
+    font-weight: bold;
+    flex-shrink: 0;
+    border: 1px solid #ddd;
+}
+
+.initials-input::placeholder {
+    font-size: 0.8rem;
+    opacity: 0.6;
+    font-weight: normal;
+}
+
+.initials-input:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 2px rgba(76, 175, 80, 0.1);
+}
+
+.agreement-text {
+    font-size: 0.85rem;
+    color: #444;
+    line-height: 1.4;
+    flex-grow: 1;
+    margin: 0;
+}
+
+.agreement-section {
+    margin-bottom: 1.5rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid #eee;
+}
+
+.agreement-section h3 {
+    font-size: 1rem;
+    margin-bottom: 1rem;
+    color: var(--text-color);
+}
+
+.signature-group {
+    margin-top: 2rem;
+}
+
+.signature-canvas {
+    width: 100%;
+    height: 150px;
+    border: 2px solid #ddd;
+    border-radius: 4px;
+    margin-top: 0.5rem;
+    background-color: #fff;
+    touch-action: none;
+    cursor: crosshair;
+}
+
+.signature-canvas.error {
+    border-color: #dc3545;
+}
+
+.clear-btn {
+    margin-top: 0.5rem;
+    background-color: #dc3545;
+    color: white;
+    padding: 0.25rem 1rem;
+    font-size: 0.9rem;
+}
+
+.total-price-final {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem;
+    background-color: #f8f9fa;
+    border-radius: 4px;
+    margin: 1.5rem 0;
+    font-size: 1.2rem;
+    font-weight: bold;
+}
+
+.total-price-final .price {
+    color: var(--primary-color);
+}
+
+/* Style for checkboxes in submit section */
+.submit-section .checkbox-group {
+    margin-bottom: 1rem;
+}
+
+.submit-section .checkbox-group label {
+    font-size: 0.85rem;
+    color: #666;
+}
+
+.signature-group::after {
+    content: "Click and drag to sign";
+    display: block;
+    font-size: 0.8rem;
+    color: #666;
+    margin-top: 0.25rem;
+}
+
+.signature-section {
+    margin: 20px 0;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    background-color: #fff;
+    padding: 15px;
+}
+
+#signatureCanvas {
+    width: 100%;
+    height: 200px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    background-color: rgba(255, 255, 255, 0);
+    margin-bottom: 10px;
+    cursor: default;
+    touch-action: none;
+    display: block;
+    position: relative;
+}
+
+#signatureCanvas.error {
+    border-color: #dc3545;
+    box-shadow: 0 0 0 2px rgba(220, 53, 69, 0.25);
+}
+
+.signature-controls {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 10px;
+}
+
+.clear-btn:hover {
+    background-color: #c82333;
+}
+
+/* Remove old signature styles */
+.signature-canvas, .signature-group {
+    display: none;
+}
+
+/* Stripe Elements styling */
+.stripe-element {
+    width: 100%;
+    padding: 0.75rem;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    background-color: white;
+    min-height: 40px;
+}
+
+.stripe-element.StripeElement--focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 2px rgba(76, 175, 80, 0.1);
+}
+
+.stripe-element.StripeElement--invalid {
+    border-color: #dc3545;
+}
+
+.carrier-info-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+.carrier-info-row .form-group {
+    margin-bottom: 0;
+}
+
+.checkbox-group input[type="checkbox"].error + label {
+    color: #dc3545;
+    font-weight: bold;
+}
+
+.form-group input.error {
+    border-color: #dc3545;
+    box-shadow: 0 0 0 2px rgba(220, 53, 69, 0.1);
+}
+
+.validation-error {
+    color: #dc3545;
+    font-size: 0.85rem;
+    margin-top: 0.25rem;
+    display: none;
+}
+
+.validation-error.show {
+    display: block;
+}
+
+/* Download PDF button styles */
+.download-btn {
+    display: inline-block;
+    background-color: #4CAF50;
+    color: white;
+    font-weight: bold;
+    padding: 10px 16px;
+    border-radius: 4px;
+    text-decoration: none;
+    margin-top: 10px;
+    transition: background-color 0.2s;
+}
+
+.download-btn:hover {
+    background-color: #45a049;
+    text-decoration: none;
+}
+
+.success-message {
+    background-color: #d4edda;
+    color: #155724;
+    padding: 15px;
+    border-radius: 5px;
+    margin-bottom: 20px;
+    text-align: center;
+    animation: fadeIn 0.5s;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+/* Timer styles */
+#redirect-timer {
+    font-size: 1.1rem;
+    margin: 15px 0;
+    animation: pulse 1.5s infinite;
+}
+
+@keyframes pulse {
+    0% { opacity: 0.8; }
+    50% { opacity: 1; }
+    100% { opacity: 0.8; }
+}
+
+/* Skip button styles */
+.success-message button {
+    display: inline-block;
+    background-color: #6c757d;
+    color: white;
+    font-weight: bold;
+    padding: 10px 16px;
+    border-radius: 4px;
+    margin-top: 10px;
+    transition: background-color 0.2s;
+    border: none;
+    cursor: pointer;
+}
+
+.success-message button:hover {
+    background-color: #5a6268;
+}
+
+/* Add styles for payment success message */
+#card-errors.success {
+    color: #28a745;
+    font-weight: bold;
+    padding: 5px;
+    border-radius: 3px;
+    background-color: rgba(40, 167, 69, 0.1);
+    border: 1px solid rgba(40, 167, 69, 0.3);
+    animation: fadeIn 0.3s ease-in-out;
+}

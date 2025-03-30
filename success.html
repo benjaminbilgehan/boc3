@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Payment successful for your BOC-3 filing service order.">
+    <title>Payment Successful | BOC-3 Filing Service</title>
+    <link rel="stylesheet" href="style.css">
+    <!-- Add Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <!-- Add Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Add jsPDF for PDF generation -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <!-- Add html2canvas for capturing signature -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <!-- Add EmailJS for sending emails -->
+    <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="logo">BOC-3 Filing</div>
+        <ul class="nav-links">
+            <li><a href="index.html">Home</a></li>
+            <li><a href="#services">Services</a></li>
+            <li><a href="#pricing">Pricing</a></li>
+            <li><a href="#contact">Contact</a></li>
+        </ul>
+    </nav>
+
+    <div class="max-w-4xl mx-auto mt-12 p-8 bg-white rounded-lg shadow-md">
+        <div class="text-center mb-8">
+            <i class="fas fa-check-circle text-[#4CAF50] text-7xl mb-4"></i>
+            <h1 class="text-3xl font-bold text-[#333] mb-2">Payment Successful!</h1>
+            <p class="text-xl text-[#666]">Your BOC-3 filing is being processed.</p>
+        </div>
+
+        <div class="bg-[#f8f9fa] p-6 rounded-lg mb-8">
+            <h2 class="text-xl font-semibold mb-4">What Happens Next?</h2>
+            <ol class="space-y-4 pl-6 list-decimal">
+                <li>Our team has received your information and payment.</li>
+                <li>An agent will be assigned to your case within 15 minutes.</li>
+                <li>You will receive a confirmation email with your filing details.</li>
+                <li>Your BOC-3 filing will be processed and submitted promptly.</li>
+                <li>Once completed, you will receive your filing documentation via email.</li>
+            </ol>
+        </div>
+
+        <div class="bg-[#f0f8ff] p-4 rounded-lg border border-[#cce5ff] mb-6">
+            <p class="text-[#004085]"><i class="fas fa-info-circle mr-2"></i> Your order details have been saved and a receipt has been sent to your email.</p>
+        </div>
+
+        <div class="text-center">
+            <p class="mb-4">If you have any questions about your order, please contact our support team.</p>
+            <div class="flex justify-center space-x-4">
+                <a href="mailto:support@boc3filing.com" class="inline-block bg-[#4CAF50] hover:bg-[#45a049] text-white font-bold py-2 px-6 rounded">
+                    Contact Support
+                </a>
+                <button id="downloadPdfBtn" class="bg-[#2196F3] hover:bg-[#0b7dda] text-white font-bold py-2 px-6 rounded flex items-center">
+                    <i class="fas fa-file-pdf mr-2"></i> Download PDF
+                </button>
+                <button id="emailPdfBtn" class="bg-[#FF9800] hover:bg-[#e68a00] text-white font-bold py-2 px-6 rounded flex items-center">
+                    <i class="fas fa-envelope mr-2"></i> Email PDF
+                </button>
+            </div>
+            <div id="emailStatus" class="mt-4 text-center hidden">
+                <p class="text-[#4CAF50]"><i class="fas fa-spinner fa-spin mr-2"></i> Sending email...</p>
+            </div>
+        </div>
+
+        <div class="mt-12 pt-6 border-t border-gray-200 text-center text-sm text-[#666]">
+            <p>For urgent matters, call us at (555) 123-4567</p>
+            <p class="mt-2">© 2023 BOC-3 Filing Service. All rights reserved.</p>
+        </div>
+    </div>
+
+    <script>
+        // Initialize EmailJS
+        (function() {
+            // User's EmailJS public key
+            emailjs.init("O1SRnxMXLrWqtQSs3");
+        })();
+
+        // Retrieve form data from localStorage and process as needed
+        document.addEventListener('DOMContentLoaded', function() {
+            const formData = JSON.parse(localStorage.getItem('boc3_form_data'));
+            if (formData) {
+                console.log('Form data retrieved:', formData);
+                
+                // Set up PDF download button
+                const downloadBtn = document.getElementById('downloadPdfBtn');
+                if (downloadBtn) {
+                    downloadBtn.addEventListener('click', function() {
+                        generatePDF(formData, 'download');
+                    });
+                }
+                
+                // Set up email PDF button
+                const emailBtn = document.getElementById('emailPdfBtn');
+                if (emailBtn) {
+                    emailBtn.addEventListener('click', function() {
+                        // Show sending status
+                        document.getElementById('emailStatus').classList.remove('hidden');
+                        
+                        // Generate PDF and send via email
+                        generatePDF(formData, 'email');
+                    });
+                }
+            }
+        });
+
+        // Function to generate PDF
+        function generatePDF(data, action = 'download') {
+            // Access the jsPDF library
+            const { jsPDF } = window.jspdf;
+            
+            // Create a new PDF document
+            const doc = new jsPDF();
+            
+            // Add logo or header
+            doc.setFontSize(20);
+            doc.setTextColor(76, 175, 80); // Green color
+            doc.text('BOC-3 Filing Service', 105, 20, null, null, 'center');
+            
+            doc.setFontSize(14);
+            doc.setTextColor(0, 0, 0); // Black color
+            doc.text('Order Confirmation', 105, 30, null, null, 'center');
+            
+            // Add date
+            const today = new Date();
+            doc.setFontSize(10);
+            doc.setTextColor(100, 100, 100); // Gray color
+            doc.text(`Date: ${today.toLocaleDateString()}`, 20, 40);
+            
+            // Add order number
+            const orderNumber = 'BOC-' + Math.floor(100000 + Math.random() * 900000);
+            doc.text(`Order #: ${orderNumber}`, 20, 45);
+            
+            // Horizontal line
+            doc.setDrawColor(220, 220, 220);
+            doc.line(20, 50, 190, 50);
+            
+            // Customer information section
+            doc.setFontSize(12);
+            doc.setTextColor(0, 0, 0);
+            doc.text('Customer Information', 20, 60);
+            
+            doc.setFontSize(10);
+            doc.text(`USDOT Number: ${data.usdot}`, 20, 70);
+            doc.text(`Company Name: ${data.companyName}`, 20, 75);
+            doc.text(`Owner: ${data.ownerName}`, 20, 80);
+            doc.text(`Email: ${data.email}`, 20, 85);
+            doc.text(`Phone: ${data.phone}`, 20, 90);
+            
+            // Address information
+            doc.setFontSize(12);
+            doc.text('Address Information', 20, 100);
+            
+            doc.setFontSize(10);
+            doc.text(`Street: ${data.address.street}`, 20, 110);
+            doc.text(`City: ${data.address.city}`, 20, 115);
+            doc.text(`State: ${data.address.state}`, 20, 120);
+            doc.text(`ZIP Code: ${data.address.zip}`, 20, 125);
+            
+            // Order details
+            doc.setFontSize(12);
+            doc.text('Order Details', 20, 140);
+            
+            doc.setFontSize(10);
+            doc.text('Service: BOC-3 Process Agent Filing Service', 20, 150);
+            doc.text('Coverage: All 50 states', 20, 155);
+            
+            // Pricing
+            doc.setFontSize(12);
+            doc.text('Payment Information', 20, 170);
+            
+            doc.setFontSize(10);
+            doc.text('Price: $150.00', 20, 180);
+            doc.text('Payment Status: Paid', 20, 185);
+            doc.text('Payment Method: Credit Card', 20, 190);
+            
+            // Add signature
+            if (data.signature) {
+                doc.addPage();
+                doc.setFontSize(12);
+                doc.text('Signature', 105, 20, null, null, 'center');
+                
+                try {
+                    doc.addImage(data.signature, 'PNG', 60, 30, 90, 30);
+                } catch (error) {
+                    console.error('Failed to add signature to PDF:', error);
+                    doc.text('Signature could not be displayed', 105, 40, null, null, 'center');
+                }
+                
+                // Add terms that were initialed
+                doc.setFontSize(12);
+                doc.text('Agreed Terms', 20, 70);
+                
+                doc.setFontSize(8);
+                doc.text('• I certify that I am the authorized holder and signer of the credit card referenced above.', 20, 80);
+                doc.text('• I understand that this information is provided in good faith by me/my knowledge.', 20, 85);
+                doc.text('• I hereby authorize the collection of payment to DOT Operating Authority Inc.', 20, 90);
+                doc.text('• I acknowledge that the total amount includes any and all Federal, State, and Local Government fees.', 20, 95);
+                doc.text('• I hereby acknowledge and agree that this payment is non-refundable after agent assignment.', 20, 100);
+            }
+            
+            // Final note
+            doc.setFontSize(10);
+            doc.text('Thank you for your order!', 105, 240, null, null, 'center');
+            doc.text('If you have any questions, please contact our support team at support@boc3filing.com', 105, 245, null, null, 'center');
+            
+            // Determine what to do with the PDF
+            if (action === 'download') {
+                // Save the PDF for download
+                doc.save(`BOC3_Filing_${orderNumber}.pdf`);
+            } else if (action === 'email') {
+                // Send the PDF via email
+                const pdfData = doc.output('datauristring');
+                sendEmailWithPDF(data, pdfData, orderNumber);
+            }
+        }
+        
+        // Function to send email with PDF attachment
+        function sendEmailWithPDF(formData, pdfData, orderNumber) {
+            // Prepare email template parameters
+            const templateParams = {
+                to_email: formData.email,
+                to_name: formData.ownerName,
+                company_name: formData.companyName,
+                order_number: orderNumber,
+                usdot: formData.usdot,
+                pdf_attachment: pdfData
+            };
+            
+            // Send email using EmailJS
+            // Replace "service_xxxxxx" with your EmailJS service ID from the dashboard
+            // Replace "template_xxxxxx" with your EmailJS template ID from the dashboard
+            emailjs.send("service_xxxxxx", "template_xxxxxx", templateParams)
+                .then(function(response) {
+                    console.log('Email sent successfully!', response.status, response.text);
+                    
+                    // Update status
+                    const emailStatus = document.getElementById('emailStatus');
+                    emailStatus.innerHTML = '<p class="text-[#4CAF50]"><i class="fas fa-check-circle mr-2"></i> Email sent successfully! Please check your inbox and spam folder.</p>';
+                    
+                    // Hide status after 5 seconds
+                    setTimeout(function() {
+                        emailStatus.classList.add('hidden');
+                    }, 8000);
+                }, function(error) {
+                    console.error('Email failed to send:', error);
+                    
+                    // Update status
+                    const emailStatus = document.getElementById('emailStatus');
+                    emailStatus.innerHTML = '<p class="text-[#dc3545]"><i class="fas fa-times-circle mr-2"></i> Failed to send email. Please try again or contact support if the problem persists.</p>';
+                    
+                    // Hide status after 5 seconds
+                    setTimeout(function() {
+                        emailStatus.classList.add('hidden');
+                    }, 8000);
+                });
+        }
+    </script>
+</body>
+</html> 

@@ -1,0 +1,16 @@
+{
+  "name": "boc3-filing-service",
+  "version": "1.0.0",
+  "description": "BOC-3 Filing Service with Stripe integration",
+  "main": "index.js",
+  "scripts": {
+    "dev": "vercel dev",
+    "deploy": "vercel deploy --prod"
+  },
+  "dependencies": {
+    "stripe": "^12.18.0"
+  },
+  "devDependencies": {
+    "vercel": "^32.5.0"
+  }
+} 

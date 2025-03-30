@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stripe Setup Instructions</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        h1 {
+            color: #6772e5;
+            border-bottom: 2px solid #6772e5;
+            padding-bottom: 10px;
+        }
+        h2 {
+            color: #3a3a3a;
+            margin-top: 30px;
+        }
+        .step {
+            background-color: #f8f9fa;
+            border-left: 4px solid #6772e5;
+            padding: 15px;
+            margin-bottom: 20px;
+            border-radius: 0 4px 4px 0;
+        }
+        .step h3 {
+            margin-top: 0;
+            color: #6772e5;
+        }
+        code {
+            background-color: #f1f1f1;
+            padding: 2px 5px;
+            border-radius: 3px;
+            font-family: monospace;
+        }
+        .code-block {
+            background-color: #272822;
+            color: #f8f8f2;
+            padding: 15px;
+            border-radius: 5px;
+            overflow-x: auto;
+            font-family: monospace;
+            line-height: 1.4;
+        }
+        img {
+            max-width: 100%;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            margin: 15px 0;
+        }
+        .alert {
+            background-color: #fff8e1;
+            border-left: 4px solid #ffc107;
+            padding: 15px;
+            margin-bottom: 20px;
+            border-radius: 0 4px 4px 0;
+        }
+    </style>
+</head>
+<body>
+    <h1>Stripe Integration Setup Guide</h1>
+    
+    <div class="alert">
+        <strong>Note:</strong> You're encountering an error because the Stripe Checkout needs a proper Price ID, not a Product ID.
+    </div>
+
+    <h2>Why You're Getting an Error</h2>
+    <p>The error <code>lineItems.0.price_data is not an accepted parameter</code> means that when using Stripe Checkout directly from the frontend (client-side), you must use a pre-created Price ID and cannot dynamically create pricing.</p>
+
+    <div class="step">
+        <h3>Step 1: Log in to your Stripe Dashboard</h3>
+        <p>Go to <a href="https://dashboard.stripe.com/login" target="_blank">dashboard.stripe.com</a> and log in to your account.</p>
+    </div>
+
+    <div class="step">
+        <h3>Step 2: Go to Products</h3>
+        <p>In the left sidebar, click on "Products".</p>
+    </div>
+
+    <div class="step">
+        <h3>Step 3: Find your BOC-3 product</h3>
+        <p>You should see your "BOC-3 Process Agent Filing Service" product. Click on it.</p>
+        <p>If you don't see it, create a new product by clicking "Add product" and filling in the details.</p>
+    </div>
+
+    <div class="step">
+        <h3>Step 4: Create a Price for your product</h3>
+        <p>Look for "Add a price" or "Add pricing" button. Click it.</p>
+        <p>Fill in the details:</p>
+        <ul>
+            <li>Pricing model: One-time</li>
+            <li>Price: $150.00</li>
+            <li>Currency: USD</li>
+        </ul>
+        <p>Click "Save" to create the price.</p>
+    </div>
+
+    <div class="step">
+        <h3>Step 5: Copy the Price ID</h3>
+        <p>After creating the price, you'll see it listed under your product. The Price ID will look something like <code>price_1AbCdEfGhIjKlMnOpQrStUvW</code>.</p>
+        <p>Copy this Price ID - you'll need it for your code.</p>
+    </div>
+
+    <div class="step">
+        <h3>Step 6: Update your code</h3>
+        <p>Open your <code>script.js</code> file and find the Stripe checkout code (around line 80-90).</p>
+        <p>Replace the placeholder Price ID with your actual Price ID:</p>
+        
+        <div class="code-block">
+stripe.redirectToCheckout({
+    mode: 'payment',
+    lineItems: [{
+        price: 'price_YOUR_ACTUAL_PRICE_ID', // Replace this with your copied Price ID
+        quantity: 1
+    }],
+    successUrl: window.location.href + '?payment_success=true',
+    cancelUrl: window.location.href + '?payment_canceled=true',
+    customerEmail: customerEmail
+})
+        </div>
+    </div>
+
+    <h2>Testing Your Integration</h2>
+    <p>Once you've updated your code with the real Price ID, you can test the payment flow using Stripe's test cards:</p>
+    <ul>
+        <li><strong>4242 4242 4242 4242</strong> - Successful payment</li>
+        <li><strong>4000 0000 0000 9995</strong> - Insufficient funds</li>
+        <li>Use any future expiration date and any 3-digit CVC</li>
+    </ul>
+
+    <h2>Going Live</h2>
+    <p>When you're ready to accept real payments:</p>
+    <ol>
+        <li>Switch from test mode to live mode in your Stripe Dashboard</li>
+        <li>Create a live version of your product and pricing</li>
+        <li>Update your code to use the live Price ID</li>
+        <li>Change your Stripe publishable key from <code>pk_test_...</code> to <code>pk_live_...</code></li>
+    </ol>
+
+    <div class="alert">
+        <strong>Need more help?</strong> Check out the <a href="https://stripe.com/docs/checkout/quickstart" target="_blank">Stripe Checkout documentation</a> for detailed information.
+    </div>
+</body>
+</html> 

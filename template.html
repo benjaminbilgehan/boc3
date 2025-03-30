@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>BOC-3 Filing Order Confirmation</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .header {
+            background-color: #4CAF50;
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+        .content {
+            background-color: #fff;
+            padding: 20px;
+        }
+        .footer {
+            background-color: #f4f4f4;
+            padding: 15px;
+            text-align: center;
+            font-size: 12px;
+            color: #666;
+        }
+        .order-details {
+            background-color: #f9f9f9;
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 4px;
+        }
+        .button {
+            display: inline-block;
+            background-color: #4CAF50;
+            color: white !important;
+            text-decoration: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            margin: 15px 0;
+            font-weight: bold;
+        }
+        .disclaimer {
+            font-size: 11px;
+            color: #999;
+            margin-top: 20px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        th, td {
+            padding: 10px;
+            text-align: left;
+            border-bottom: 1px solid #eee;
+        }
+        th {
+            background-color: #f4f4f4;
+        }
+        .signature-container {
+            margin-top: 20px;
+            padding: 15px;
+            border: 1px solid #eee;
+            border-radius: 4px;
+            background-color: #fafafa;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>BOC-3 Filing Order Confirmation</h1>
+            <p>Order #: {{order_number}}</p>
+        </div>
+        
+        <div class="content">
+            <p>Hello {{to_name}},</p>
+            
+            <p>Thank you for choosing BOC-3 Filing Service. Your order has been received and is being processed. Please complete payment to finalize your filing.</p>
+            
+            <div class="order-details">
+                <h3>Order Details</h3>
+                <table>
+                    <tr>
+                        <th>Item</th>
+                        <th>Details</th>
+                    </tr>
+                    <tr>
+                        <td>Service</td>
+                        <td>BOC-3 Process Agent Filing Service</td>
+                    </tr>
+                    <tr>
+                        <td>Coverage</td>
+                        <td>All 50 states</td>
+                    </tr>
+                    <tr>
+                        <td>Company</td>
+                        <td>{{company_name}}</td>
+                    </tr>
+                    <tr>
+                        <td>Owner</td>
+                        <td>{{to_name}}</td>
+                    </tr>
+                    <tr>
+                        <td>USDOT</td>
+                        <td>{{usdot}}</td>
+                    </tr>
+                    <tr>
+                        <td>Email</td>
+                        <td>{{email}}</td>
+                    </tr>
+                    <tr>
+                        <td>Phone</td>
+                        <td>{{phone}}</td>
+                    </tr>
+                    <tr>
+                        <td>Address</td>
+                        <td>{{address}}</td>
+                    </tr>
+                    <tr>
+                        <td>Total</td>
+                        <td>$150.00</td>
+                    </tr>
+                    <tr>
+                        <td>Status</td>
+                        <td>Pending Payment</td>
+                    </tr>
+                </table>
+            </div>
+            
+            <!-- Signature placeholder -->
+            <div class="signature-container">
+                <h3>Signature</h3>
+                <div style="padding: 10px; border: 1px dashed #ddd; text-align: center; margin-bottom: 10px;">
+                    <p style="font-size: 18px; color: #4CAF50; margin: 0;">✓ Digitally signed</p>
+                </div>
+                <p style="font-size: 12px; color: #666; font-style: italic; margin-top: 5px;">
+                    Note: Your full signature is included in the PDF document attached to your confirmation page. Please download and save this PDF for your records.
+                </p>
+            </div>
+            
+            <h3>What Happens Next?</h3>
+            <ol>
+                <li>Complete payment using the link provided on the confirmation page.</li>
+                <li>An agent will be assigned to your case within 15 minutes after payment.</li>
+                <li>Your BOC-3 filing will be processed and submitted promptly.</li>
+                <li>Once completed, you will receive your filing documentation via email.</li>
+            </ol>
+            
+            <p>{{message_content}}</p>
+            
+            <div style="text-align: center;">
+                <a href="mailto:support@boc3filing.com" class="button">Contact Support</a>
+            </div>
+            
+            <div class="disclaimer">
+                <p><strong>Important:</strong> This is an automated message. Please do not reply to this email. If you need assistance, please contact our support team at support@boc3filing.com </p>
+                
+                <p>The information contained in this email is confidential and may be subject to legal privilege. If you are not the intended recipient, you must not use, copy, distribute or disclose the email or any part of its contents or take any action in reliance on it.</p>
+            </div>
+        </div>
+        
+        <div class="footer">
+            <p>&copy; 2025 BOC-3 Filing Service. All rights reserved.</p>
+            <p>1317 Edgewater Dr #6202, Orlando, FL 32804</p>
+        </div>
+    </div>
+</body>
+</html> 
