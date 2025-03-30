@@ -1,0 +1,9 @@
+{
+  "name": "create-payment-intent",
+  "version": "1.0.0",
+  "description": "Stripe payment intent creation endpoint",
+  "main": "index.js",
+  "dependencies": {
+    "stripe": "^12.18.0"
+  }
+} 

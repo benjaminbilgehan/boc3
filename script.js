@@ -89,7 +89,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     
                     // Try to create a real payment intent from the server
                     try {
-                        // Use full URL to ensure we're always hitting the correct endpoint
+                        // Use the correct API URL format for Vercel serverless functions
                         const apiUrl = `${window.location.origin}/api/create-payment-intent`;
                         console.log("Sending request to API URL:", apiUrl);
                         
