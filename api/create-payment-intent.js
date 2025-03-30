@@ -43,6 +43,5 @@ const handler = async (req, res) => {
   }
 };
 
-// Support both CommonJS and ES modules
-module.exports = handler;
-export default handler; 
+// Only use CommonJS format to avoid issues
+module.exports = handler; 

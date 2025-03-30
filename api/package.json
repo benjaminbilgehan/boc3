@@ -1,0 +1,10 @@
+{
+  "name": "boc3-api",
+  "version": "1.0.0",
+  "description": "API endpoints for BOC-3 Filing Service",
+  "main": "create-payment-intent.js",
+  "dependencies": {
+    "stripe": "^12.18.0"
+  },
+  "type": "commonjs"
+} 

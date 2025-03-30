@@ -89,11 +89,10 @@ document.addEventListener('DOMContentLoaded', function() {
                     
                     // Try to create a real payment intent from the server
                     try {
-                        // Use full URL in production, relative URL in development
-                        const apiUrl = window.location.hostname.includes('localhost') || window.location.hostname.includes('127.0.0.1')
-                            ? '/api/create-payment-intent'
-                            : `${window.location.origin}/api/create-payment-intent`;
-                            
+                        // Use full URL to ensure we're always hitting the correct endpoint
+                        const apiUrl = `${window.location.origin}/api/create-payment-intent`;
+                        console.log("Sending request to API URL:", apiUrl);
+                        
                         const response = await fetch(apiUrl, {
                             method: 'POST',
                             headers: {
@@ -110,6 +109,12 @@ document.addEventListener('DOMContentLoaded', function() {
                                 }
                             }),
                         });
+                        
+                        // Check for non-JSON responses first
+                        const contentType = response.headers.get("content-type");
+                        if (!contentType || !contentType.includes("application/json")) {
+                            throw new Error(`Server returned non-JSON response: ${await response.text()}`);
+                        }
                         
                         if (!response.ok) {
                             const errorData = await response.json();
