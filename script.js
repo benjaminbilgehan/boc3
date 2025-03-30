@@ -1,6 +1,20 @@
 document.addEventListener('DOMContentLoaded', function() {
     console.log('DOM fully loaded, initializing app...');
     
+    // Check if running in production environment
+    const isProduction = !window.location.hostname.includes('localhost');
+    console.log(`Running in ${isProduction ? 'production' : 'development'} environment`);
+    
+    // Set up global error handling
+    if (isProduction) {
+        // In production, add global error handler
+        window.addEventListener('error', function(event) {
+            console.error('Global error caught:', event.error);
+            // Don't show alerts in production, log silently
+            event.preventDefault();
+        });
+    }
+    
     // Get main UI elements
     const startFilingBtn = document.querySelector('.start-filing-btn');
     const formContainer = document.querySelector('.form-container');
@@ -492,9 +506,27 @@ document.addEventListener('DOMContentLoaded', function() {
                     return;
                 }
                 
-                // Send data to server
-                console.log('Submission data:', formData);
-                alert('Form submitted successfully! In a real implementation, this data would be sent to the server.');
+                try {
+                    // In production, we would send data to the server
+                    // For now, we'll just log it and show success message
+                    console.log('Submission data:', formData);
+                    
+                    // Store submission in localStorage for future reference
+                    const submissionKey = `boc3_submission_${formData.usdot}_${new Date().toISOString().replace(/[:.]/g, '-')}`;
+                    localStorage.setItem(submissionKey, JSON.stringify({
+                        usdot: formData.usdot,
+                        email: formData.email,
+                        timestamp: formData.submittedDate,
+                        status: 'completed'
+                    }));
+                    
+                    // Show success alert only in development
+                    if (!window.APP_VERSION?.isProduction) {
+                        alert('Form submitted successfully! In a real implementation, this data would be sent to the server.');
+                    }
+                } catch (storeError) {
+                    console.error('Error storing submission data:', storeError);
+                }
                 
                 // Replace form with success message
                 const successMessage = document.createElement('div');
@@ -520,7 +552,8 @@ document.addEventListener('DOMContentLoaded', function() {
                     if (countdownEl) countdownEl.textContent = countdown;
                     if (countdown <= 0) {
                         clearInterval(countdownInterval);
-                        window.location.href = '/';
+                        // Use relative URL that works regardless of domain
+                        window.location.href = window.location.origin;
                     }
                 }, 1000);
                 
@@ -529,7 +562,8 @@ document.addEventListener('DOMContentLoaded', function() {
                 if (skipButton) {
                     skipButton.addEventListener('click', () => {
                         clearInterval(countdownInterval);
-                        window.location.href = '/';
+                        // Use relative URL that works regardless of domain
+                        window.location.href = window.location.origin;
                     });
                 }
                 
@@ -607,6 +641,7 @@ async function loadSupabaseClient() {
                 return;
             }
             
+            // Get Supabase credentials - these should match with vercel.json env variables
             const supabaseUrl = 'https://fedrwwuqzgdogvwmlugv.supabase.co';
             const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZlZHJ3d3Vxemdkb2d2d21sdWd2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDMzNDc4MDgsImV4cCI6MjA1ODkyMzgwOH0.yUbMKtFXI2l1tGdz3zvMzRWYzvwI66LeeBFzmYV-sUk';
             
@@ -630,8 +665,9 @@ async function loadSupabaseClient() {
             console.log("Loading Supabase JS SDK from CDN...");
             
             try {
+                // Use newer version of Supabase client for better compatibility
                 const script = document.createElement('script');
-                script.src = 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2';
+                script.src = 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js';
                 script.async = true;
                 document.head.appendChild(script);
                 
@@ -653,7 +689,7 @@ async function loadSupabaseClient() {
                     
                     // Try one more time with a different CDN
                     const backupScript = document.createElement('script');
-                    backupScript.src = 'https://unpkg.com/@supabase/supabase-js@2';
+                    backupScript.src = 'https://unpkg.com/@supabase/supabase-js@2/dist/umd/supabase.min.js';
                     backupScript.async = true;
                     document.head.appendChild(backupScript);
                     
