@@ -1,7 +1,8 @@
 // This is a Vercel serverless function that handles creating payment intents
 const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY || 'sk_test_51LpCLtGInLr2DrSTuYYYSKMzwjs5DNF3WHPnnKA1UtDdMdRyc8s23yEzliwhZgjCFsn5Prz235YoivAiso2dwybz008nf7VPA9');
 
-module.exports = async (req, res) => {
+// Handler function
+const handler = async (req, res) => {
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' });
   }
@@ -40,4 +41,8 @@ module.exports = async (req, res) => {
       type: error.type
     });
   }
-}; 
+};
+
+// Support both CommonJS and ES modules
+module.exports = handler;
+export default handler; 

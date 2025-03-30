@@ -89,7 +89,12 @@ document.addEventListener('DOMContentLoaded', function() {
                     
                     // Try to create a real payment intent from the server
                     try {
-                        const response = await fetch('/api/create-payment-intent', {
+                        // Use full URL in production, relative URL in development
+                        const apiUrl = window.location.hostname.includes('localhost') || window.location.hostname.includes('127.0.0.1')
+                            ? '/api/create-payment-intent'
+                            : `${window.location.origin}/api/create-payment-intent`;
+                            
+                        const response = await fetch(apiUrl, {
                             method: 'POST',
                             headers: {
                                 'Content-Type': 'application/json',
