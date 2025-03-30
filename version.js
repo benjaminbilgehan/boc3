@@ -5,7 +5,7 @@
  */
 
 const APP_VERSION = {
-    version: '1.0.2',
+    version: '1.0.3',
     releaseDate: '2025-03-30',
     buildTime: Date.now(),
     environment: window.location.hostname.includes('localhost') ? 'development' : 'production',
@@ -15,7 +15,8 @@ const APP_VERSION = {
         'PDF generation',
         'Email notifications',
         'Supabase database integration',
-        'Form field locking after payment'
+        'Form field locking after payment',
+        'Multi-user support with Start New Application feature'
     ],
     lastUpdated: 'March 30, 2025'
 };

@@ -1628,9 +1628,12 @@ document.addEventListener('DOMContentLoaded', function() {
         if (step1 && !step1.querySelector('.locked-notice')) {
             const lockedNotice = document.createElement('div');
             lockedNotice.className = 'locked-notice bg-blue-50 border-l-4 border-blue-500 p-4 mb-4 text-blue-700';
-            lockedNotice.innerHTML = '<i class="fas fa-info-circle mr-2"></i> Your carrier information has been locked after payment. If you need to make changes, please contact customer support.';
+            lockedNotice.innerHTML = '<i class="fas fa-info-circle mr-2"></i> Your carrier information has been locked after payment. If you need to make changes, please contact customer support. To file for a different carrier, use the "Start New Application" button at the bottom of the form.';
             step1.insertBefore(lockedNotice, step1.firstChild);
         }
+        
+        // Make sure "Start New Application" button is visible
+        addStartNewButton();
     }
 
     // Check if payment is already processed on page load and disable fields if needed
@@ -1644,6 +1647,188 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         } catch (e) {
             console.error("Error checking payment status:", e);
+        }
+    }
+
+    // Function to add a "Start New Application" button to the form
+    function addStartNewButton() {
+        // Check if button already exists
+        if (document.querySelector('.reset-form-btn')) return;
+        
+        // Create reset button container
+        const resetBtnContainer = document.createElement('div');
+        resetBtnContainer.className = 'reset-form-container mt-4 text-center';
+        
+        // Create button
+        const resetBtn = document.createElement('button');
+        resetBtn.className = 'reset-form-btn bg-blue-500 hover:bg-blue-600 text-white py-2 px-4 rounded shadow';
+        resetBtn.innerHTML = '<i class="fas fa-redo-alt mr-2"></i>Start New Application';
+        resetBtn.addEventListener('click', startNewApplication);
+        
+        // Add to container
+        resetBtnContainer.appendChild(resetBtn);
+        
+        // Add explanatory text
+        const resetText = document.createElement('p');
+        resetText.className = 'text-sm text-gray-500 mt-2';
+        resetText.textContent = 'Click this button to start a new BOC-3 filing for another carrier.';
+        resetBtnContainer.appendChild(resetText);
+        
+        // Add to form container, after the form
+        const formElem = document.querySelector('.filing-form');
+        if (formElem && formElem.parentNode) {
+            formElem.parentNode.insertBefore(resetBtnContainer, formElem.nextSibling);
+        }
+    }
+    
+    // Function to reset the form and start a new application
+    function startNewApplication() {
+        if (!confirm('Are you sure you want to start a new application? This will clear all current form data.')) {
+            return;
+        }
+        
+        console.log('Starting new application...');
+        
+        // Clear all form data from localStorage specific to this form
+        const keysToRemove = [
+            'boc3_carrier_data',
+            'boc3_payment_data',
+            'boc3_signature',
+            'boc3_initials'
+        ];
+        
+        keysToRemove.forEach(key => localStorage.removeItem(key));
+        
+        // Reset form fields
+        document.getElementById('filing-form').reset();
+        
+        // Enable all form fields that might have been disabled
+        enableCarrierInfoFields();
+        
+        // Remove any notices
+        document.querySelectorAll('.locked-notice, .edit-notice').forEach(notice => {
+            notice.remove();
+        });
+        
+        // Reset to first step
+        showStep(0);
+        
+        // Reset Stripe card element if it exists
+        if (typeof cardElement !== 'undefined' && cardElement) {
+            cardElement.clear();
+        }
+        
+        // Clear signature if it exists
+        if (typeof signaturePad !== 'undefined' && signaturePad) {
+            signaturePad.clear();
+        }
+        
+        // Reset payment processed flag
+        paymentProcessed = false;
+        
+        // Show success message for new application
+        const formSteps = document.querySelector('.form-steps');
+        const newAppMessage = document.createElement('div');
+        newAppMessage.className = 'bg-green-100 border-l-4 border-green-500 text-green-700 p-4 mb-4';
+        newAppMessage.innerHTML = '<i class="fas fa-check-circle mr-2"></i> New application started. You can now enter information for a different carrier.';
+        
+        // Insert message after form steps
+        if (formSteps && formSteps.parentNode) {
+            formSteps.parentNode.insertBefore(newAppMessage, formSteps.nextSibling);
+            
+            // Remove message after 5 seconds
+            setTimeout(() => {
+                newAppMessage.classList.add('fade-out');
+                setTimeout(() => newAppMessage.remove(), 500);
+            }, 5000);
+        }
+        
+        console.log('Form reset successfully');
+    }
+    
+    // Function to enable all carrier info fields (opposite of disable function)
+    function enableCarrierInfoFields() {
+        const carrierInfoFields = [
+            'usdot',
+            'ownerName',
+            'email',
+            'phone',
+            'companyName',
+            'streetAddress',
+            'city',
+            'state',
+            'zipCode',
+            'confirmInfo'
+        ];
+        
+        carrierInfoFields.forEach(fieldId => {
+            const field = document.getElementById(fieldId);
+            if (field) {
+                field.disabled = false;
+                field.classList.remove('bg-gray-100');
+                
+                // Remove lock icon from label
+                const fieldLabel = field.previousElementSibling;
+                if (fieldLabel && fieldLabel.tagName === 'LABEL') {
+                    const lockIcon = fieldLabel.querySelector('.fa-lock');
+                    if (lockIcon) {
+                        fieldLabel.removeChild(lockIcon);
+                    }
+                }
+            }
+        });
+    }
+
+    // Check for completed applications and show reset notice if needed
+    checkCompletedApplications();
+    
+    // Function to check for completed applications and show a notice
+    function checkCompletedApplications() {
+        // If we have payment data and carrier data in localStorage
+        const hasPaymentData = localStorage.getItem('boc3_payment_data');
+        const hasCarrierData = localStorage.getItem('boc3_carrier_data');
+        
+        if (hasPaymentData && hasCarrierData) {
+            try {
+                const paymentData = JSON.parse(hasPaymentData);
+                const carrierData = JSON.parse(hasCarrierData);
+                
+                // Check if it's a completed application
+                if (paymentData && paymentData.id && carrierData && carrierData.usdot) {
+                    // Create a notice for the existing application
+                    const notice = document.createElement('div');
+                    notice.className = 'bg-yellow-100 border-l-4 border-yellow-500 p-4 mb-4 text-yellow-800';
+                    notice.innerHTML = `
+                        <div class="flex">
+                            <div class="flex-shrink-0">
+                                <i class="fas fa-exclamation-triangle text-yellow-500"></i>
+                            </div>
+                            <div class="ml-3">
+                                <p class="text-sm">
+                                    <strong>Notice:</strong> There's a completed application for USDOT #${carrierData.usdot} on this device. 
+                                    To file for a new carrier, please click the "Start New Application" button.
+                                </p>
+                                <div class="mt-2">
+                                    <button type="button" id="start-new-app-notice" class="text-sm px-3 py-1 bg-yellow-500 hover:bg-yellow-600 text-white rounded">
+                                        Start New Application
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                    
+                    // Add to the top of the form container
+                    if (formContainer && !document.querySelector('.completed-app-notice')) {
+                        notice.classList.add('completed-app-notice');
+                        formContainer.insertBefore(notice, formContainer.firstChild);
+                        
+                        // Add event listener to the button
+                        document.getElementById('start-new-app-notice').addEventListener('click', startNewApplication);
+                    }
+                }
+            } catch (e) {
+                console.error("Error checking for completed applications:", e);
+            }
         }
     }
 });
