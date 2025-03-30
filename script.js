@@ -207,6 +207,9 @@ document.addEventListener('DOMContentLoaded', function() {
                     // Mark payment as processed
                     paymentProcessed = true;
                     
+                    // Disable all fields in the carrier info section
+                    disableCarrierInfoFields();
+                    
                     // Show success message
                     const cardErrorElement = document.getElementById('card-errors');
                     cardErrorElement.textContent = clientSecret 
@@ -272,6 +275,9 @@ document.addEventListener('DOMContentLoaded', function() {
             
             // Mark payment as processed
             paymentProcessed = true;
+            
+            // Disable all fields in the carrier info section
+            disableCarrierInfoFields();
             
             // Show success alert
             alert('Payment successful! Please proceed with your filing submission.');
@@ -1479,7 +1485,68 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     };
 
+    // Admin function to unlock carrier info fields if needed
+    window.unlockCarrierInfo = function(adminPassword) {
+        // Simple password protection to prevent unauthorized use
+        if (adminPassword !== 'boc3admin') {
+            console.error('Incorrect admin password');
+            return false;
+        }
+        
+        console.log('Unlocking carrier info fields...');
+        
+        const carrierInfoFields = [
+            'usdot',
+            'ownerName',
+            'email',
+            'phone',
+            'companyName',
+            'streetAddress',
+            'city',
+            'state',
+            'zipCode',
+            'confirmInfo'
+        ];
+        
+        // Enable all fields
+        carrierInfoFields.forEach(fieldId => {
+            const field = document.getElementById(fieldId);
+            if (field) {
+                field.disabled = false;
+                field.classList.remove('bg-gray-100');
+                
+                // Remove lock icon from label
+                const fieldLabel = field.previousElementSibling;
+                if (fieldLabel && fieldLabel.tagName === 'LABEL') {
+                    const lockIcon = fieldLabel.querySelector('.fa-lock');
+                    if (lockIcon) {
+                        fieldLabel.removeChild(lockIcon);
+                    }
+                }
+            }
+        });
+        
+        // Remove the notice at the top
+        const lockedNotice = document.querySelector('.locked-notice');
+        if (lockedNotice) {
+            lockedNotice.remove();
+        }
+        
+        // Add an edit mode notice
+        const step1 = document.getElementById('step1');
+        if (step1) {
+            const editNotice = document.createElement('div');
+            editNotice.className = 'edit-notice bg-yellow-50 border-l-4 border-yellow-500 p-4 mb-4 text-yellow-700';
+            editNotice.innerHTML = '<i class="fas fa-exclamation-triangle mr-2"></i> <strong>Admin Edit Mode:</strong> Carrier information fields have been unlocked for editing. Please be careful when making changes.';
+            step1.insertBefore(editNotice, step1.firstChild);
+        }
+        
+        console.log('Carrier info fields unlocked successfully');
+        return true;
+    };
+
     console.log("Added testSupabaseConnection() function. Run it in the console to test the Supabase connection.");
+    console.log("Added unlockCarrierInfo() function. Admin only: call with password to unlock fields if needed.");
 
     // Function to update payment status in Supabase
     async function updatePaymentStatus(usdot, paymentData) {
@@ -1517,6 +1584,66 @@ document.addEventListener('DOMContentLoaded', function() {
             console.error("Error in updatePaymentStatus:", error);
             // This is not critical for the user experience, so just log and continue
             return false;
+        }
+    }
+
+    // Function to disable all fields in carrier info section
+    function disableCarrierInfoFields() {
+        const carrierInfoFields = [
+            'usdot',
+            'ownerName',
+            'email',
+            'phone',
+            'companyName',
+            'streetAddress',
+            'city',
+            'state',
+            'zipCode',
+            'confirmInfo'
+        ];
+        
+        carrierInfoFields.forEach(fieldId => {
+            const field = document.getElementById(fieldId);
+            if (field) {
+                field.disabled = true;
+                field.classList.add('bg-gray-100');
+                
+                // Add a visual indicator that field is locked
+                const fieldLabel = field.previousElementSibling;
+                if (fieldLabel && fieldLabel.tagName === 'LABEL') {
+                    // Create a lock icon
+                    const lockIcon = document.createElement('i');
+                    lockIcon.className = 'fas fa-lock text-gray-500 ml-2 text-xs';
+                    
+                    // Check if lock icon already exists
+                    if (!fieldLabel.querySelector('.fa-lock')) {
+                        fieldLabel.appendChild(lockIcon);
+                    }
+                }
+            }
+        });
+        
+        // Add a notice at the top of the carrier info section
+        const step1 = document.getElementById('step1');
+        if (step1 && !step1.querySelector('.locked-notice')) {
+            const lockedNotice = document.createElement('div');
+            lockedNotice.className = 'locked-notice bg-blue-50 border-l-4 border-blue-500 p-4 mb-4 text-blue-700';
+            lockedNotice.innerHTML = '<i class="fas fa-info-circle mr-2"></i> Your carrier information has been locked after payment. If you need to make changes, please contact customer support.';
+            step1.insertBefore(lockedNotice, step1.firstChild);
+        }
+    }
+
+    // Check if payment is already processed on page load and disable fields if needed
+    if (localStorage.getItem('boc3_payment_data')) {
+        try {
+            const paymentData = JSON.parse(localStorage.getItem('boc3_payment_data'));
+            if (paymentData && paymentData.id) {
+                paymentProcessed = true;
+                // Disable fields with a slight delay to ensure DOM is fully loaded
+                setTimeout(disableCarrierInfoFields, 500);
+            }
+        } catch (e) {
+            console.error("Error checking payment status:", e);
         }
     }
 });

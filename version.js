@@ -5,7 +5,7 @@
  */
 
 const APP_VERSION = {
-    version: '1.0.1',
+    version: '1.0.2',
     releaseDate: '2025-03-30',
     buildTime: Date.now(),
     environment: window.location.hostname.includes('localhost') ? 'development' : 'production',
@@ -14,7 +14,8 @@ const APP_VERSION = {
         'Stripe payment integration',
         'PDF generation',
         'Email notifications',
-        'Supabase database integration'
+        'Supabase database integration',
+        'Form field locking after payment'
     ],
     lastUpdated: 'March 30, 2025'
 };
