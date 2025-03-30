@@ -173,61 +173,14 @@
                 </div>
 
                 <div class="payment-form">
-                    <!-- Credit Card section styled like the photo -->
+                    <!-- Stripe Elements Card Input -->
                     <div class="form-group">
-                        <label for="cardNumber">Card number <span class="text-gray-400 text-sm">The 16 digits on front of your card</span></label>
-                        <input type="text" id="cardNumber" name="cardNumber" placeholder="1234 5678 9012 3456" class="card-input" maxlength="19">
-                        <div id="card-number-error" class="validation-error"></div>
-                    </div>
-
-                    <div class="card-details">
-                        <div class="form-group">
-                            <label for="expiryDate">Expiration date</label>
-                            <div class="flex items-center gap-2">
-                                <select id="expiryMonth" name="expiryMonth" class="w-full">
-                                    <option value="">Month</option>
-                                    <option value="01">01</option>
-                                    <option value="02">02</option>
-                                    <option value="03">03</option>
-                                    <option value="04">04</option>
-                                    <option value="05">05</option>
-                                    <option value="06">06</option>
-                                    <option value="07">07</option>
-                                    <option value="08">08</option>
-                                    <option value="09">09</option>
-                                    <option value="10">10</option>
-                                    <option value="11">11</option>
-                                    <option value="12">12</option>
-                                </select>
-                                <span class="text-xl">/</span>
-                                <select id="expiryYear" name="expiryYear" class="w-full">
-                                    <option value="">Year</option>
-                                    <option value="2024">2024</option>
-                                    <option value="2025">2025</option>
-                                    <option value="2026">2026</option>
-                                    <option value="2027">2027</option>
-                                    <option value="2028">2028</option>
-                                    <option value="2029">2029</option>
-                                    <option value="2030">2030</option>
-                                    <option value="2031">2031</option>
-                                    <option value="2032">2032</option>
-                                    <option value="2033">2033</option>
-                                    <option value="2034">2034</option>
-                                </select>
-                            </div>
-                            <div id="expiry-error" class="validation-error"></div>
+                        <label for="card-element">Credit or Debit Card</label>
+                        <div id="card-element" class="stripe-element">
+                            <!-- Stripe Element will be inserted here -->
                         </div>
-
-                        <div class="form-group">
-                            <label for="cvv">CVV2/CVC2</label>
-                            <input type="text" id="cvv" name="cvv" placeholder="123" maxlength="4" class="w-full">
-                            <div id="cvv-error" class="validation-error"></div>
-                        </div>
+                        <div id="card-errors" role="alert" class="validation-error"></div>
                     </div>
-                    
-                    <!-- Hidden Stripe Element (used behind the scenes) -->
-                    <div id="card-element" class="stripe-element hidden"></div>
-                    <div id="card-errors" role="alert" class="validation-error"></div>
 
                     <!-- Billing Address Section -->
                     <div class="mt-6 mb-4 border-t pt-4">

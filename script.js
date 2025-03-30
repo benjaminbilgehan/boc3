@@ -27,35 +27,70 @@ document.addEventListener('DOMContentLoaded', function() {
     let paymentProcessed = false;
     let paymentMethod = null;
     
-    // We're not using the Elements UI but still need it for the API
+    // Create an instance of Elements and mount the Card Element
     const elements = stripe.elements();
     const cardElement = elements.create('card', {
-        hidePostalCode: true
+        style: {
+            base: {
+                color: '#32325d',
+                fontFamily: '"Helvetica Neue", Helvetica, sans-serif',
+                fontSmoothing: 'antialiased',
+                fontSize: '16px',
+                '::placeholder': {
+                    color: '#aab7c4'
+                }
+            },
+            invalid: {
+                color: '#fa755a',
+                iconColor: '#fa755a'
+            }
+        }
     });
     
-    // Mount the card Element to the DOM immediately if we're on step 2
-    // This is now hidden but needed for Stripe API
+    // Mount the card Element to the DOM
     function initializeCardElement() {
-        console.log("Initializing hidden Stripe element...");
-        const cardElementContainer = document.getElementById('card-element');
-        if (cardElementContainer) {
+        console.log("Initializing card element...");
+        if (document.getElementById('card-element')) {
             try {
+                // First unmount if already mounted
+                try {
+                    cardElement.unmount();
+                } catch (e) {
+                    console.log("Card element not previously mounted");
+                }
+                
+                // Now mount the card element
                 cardElement.mount('#card-element');
-                console.log("Hidden card element mounted");
+                console.log("Card element mounted successfully");
+                
+                // Handle real-time validation errors from the card Element
+                cardElement.on('change', function(event) {
+                    const displayError = document.getElementById('card-errors');
+                    if (event.error) {
+                        displayError.textContent = event.error.message;
+                        displayError.classList.add('show');
+                    } else {
+                        displayError.textContent = '';
+                        displayError.classList.remove('show');
+                    }
+                });
             } catch (error) {
-                console.error("Error mounting hidden card element:", error);
+                console.error("Error mounting card element:", error);
+                // Show error to user
+                const displayError = document.getElementById('card-errors');
+                if (displayError) {
+                    displayError.textContent = "There was a problem loading the payment form. Please refresh the page and try again.";
+                    displayError.classList.add('show');
+                }
             }
+        } else {
+            console.warn("Card element container not found in the DOM");
         }
     }
 
     // Initialize by showing the first step
     let currentStep = 0;
     showStep(currentStep);
-    
-    // Call initializeCardElement on page load to handle direct visits to payment step
-    if (document.getElementById('card-element')) {
-        initializeCardElement();
-    }
     
     // Set up billing address toggle
     const sameAsPhysicalCheckbox = document.getElementById('sameAsPhysical');
@@ -104,42 +139,19 @@ document.addEventListener('DOMContentLoaded', function() {
         
         // Initialize card element when showing payment step
         if (index === 1) { // Step 2 has index 1
-            console.log("Payment step shown");
-            
-            // Set up card formatting
-            setupCardFormatting();
+            console.log("Payment step shown, initializing card element...");
+            // Slight delay to ensure the DOM is fully rendered
+            setTimeout(initializeCardElement, 200);
         }
         
         // Update the current step
         currentStep = index;
     }
     
-    // Setup card formatting and validation
+    // Setup card formatting
     function setupCardFormatting() {
-        const cardNumberInput = document.getElementById('cardNumber');
-        const cvvInput = document.getElementById('cvv');
-        
-        if (cardNumberInput) {
-            cardNumberInput.addEventListener('input', function(e) {
-                let value = e.target.value.replace(/\D/g, '');
-                let formattedValue = '';
-                
-                for (let i = 0; i < value.length; i++) {
-                    if (i > 0 && i % 4 === 0) {
-                        formattedValue += ' ';
-                    }
-                    formattedValue += value[i];
-                }
-                
-                e.target.value = formattedValue.slice(0, 19); // 16 digits + 3 spaces
-            });
-        }
-        
-        if (cvvInput) {
-            cvvInput.addEventListener('input', function(e) {
-                e.target.value = e.target.value.replace(/\D/g, '').slice(0, 4);
-            });
-        }
+        // This function can be removed as we're now using Stripe Elements
+        // It's only kept as a reference in case we need to switch back
     }
     
     // Set up payment handling for next button in Step 2
@@ -156,11 +168,6 @@ document.addEventListener('DOMContentLoaded', function() {
                     if (errorMsg) {
                         errorMsg.classList.add('show');
                     }
-                    return;
-                }
-                
-                // Validate custom card inputs
-                if (!validateCustomCardInputs()) {
                     return;
                 }
                 
@@ -192,14 +199,15 @@ document.addEventListener('DOMContentLoaded', function() {
                     };
                     localStorage.setItem('boc3_form_data', JSON.stringify(formData));
                     
+                    // Get billing details based on checkbox setting
+                    const billingDetails = getBillingDetails();
+                    
                     // Create a PaymentIntent on the server
-                    // In production, fetch from your server. For now, just simulate
                     let clientSecret;
                     let paymentIntentId;
                     
                     // Try to create a real payment intent from the server
                     try {
-                        // Use the correct API URL format for Vercel serverless functions
                         const apiUrl = `${window.location.origin}/api/create-payment-intent`;
                         console.log("Sending request to API URL:", apiUrl);
                         
@@ -245,50 +253,31 @@ document.addEventListener('DOMContentLoaded', function() {
                     let result;
                     
                     if (clientSecret) {
-                        try {
-                            // Get values from custom form
-                            const cardNumber = document.getElementById('cardNumber').value.replace(/\s/g, '');
-                            const expiryMonth = document.getElementById('expiryMonth').value;
-                            const expiryYear = document.getElementById('expiryYear').value;
-                            const cvv = document.getElementById('cvv').value;
-                            
-                            // Create payment method with custom card details
-                            const {paymentMethod, error: pmError} = await stripe.createPaymentMethod({
-                                type: 'card',
-                                card: {
-                                    number: cardNumber,
-                                    exp_month: expiryMonth,
-                                    exp_year: expiryYear,
-                                    cvc: cvv
-                                },
-                                billing_details: getBillingDetails()
-                            });
-                            
-                            if (pmError) {
-                                throw pmError;
+                        // If we got a client secret, confirm the payment
+                        result = await stripe.confirmCardPayment(clientSecret, {
+                            payment_method: {
+                                card: cardElement,
+                                billing_details: billingDetails
                             }
-                            
-                            // Confirm payment with created payment method
-                            result = await stripe.confirmCardPayment(clientSecret, {
-                                payment_method: paymentMethod.id
-                            });
-                            
-                            if (result.error) {
-                                throw result.error;
-                            }
-                            
-                            // Store payment method for later reference
-                            paymentMethod = result.paymentMethod;
-                            
-                            // Real payment was processed successfully
-                            console.log("Payment successful:", result.paymentIntent);
-                        } catch (error) {
-                            displayError(document.getElementById('card-errors'), error.message);
+                        });
+                        
+                        if (result.error) {
+                            throw result.error;
+                        }
+                        
+                        // Real payment was processed successfully
+                        console.log("Payment successful:", result.paymentIntent);
+                    } else {
+                        // Fallback: create a payment method and simulate success
+                        const { paymentMethod, error } = await stripe.createPaymentMethod({
+                            type: 'card',
+                            card: cardElement,
+                            billing_details: billingDetails
+                        });
+                        
+                        if (error) {
                             throw error;
                         }
-                    } else {
-                        // Use our custom card form to create a payment method
-                        const paymentMethod = await createPaymentMethodFromCustomForm();
                         
                         // Simulate a successful payment
                         result = {
@@ -1946,89 +1935,19 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
-    // Function to validate the custom card inputs and create a PaymentMethod
+    // Function to validate the custom card inputs
     function validateCustomCardInputs() {
-        let isValid = true;
-        
-        // Validate card number
-        const cardNumber = document.getElementById('cardNumber').value.replace(/\s/g, '');
-        if (!isValidCardNumber(cardNumber)) {
-            displayError(document.getElementById('card-number-error'), 'Please enter a valid card number');
-            isValid = false;
-        } else {
-            removeError(document.getElementById('card-number-error'));
-        }
-        
-        // Validate expiry date
-        const expiryMonth = document.getElementById('expiryMonth').value;
-        const expiryYear = document.getElementById('expiryYear').value;
-        if (!expiryMonth || !expiryYear) {
-            displayError(document.getElementById('expiry-error'), 'Please select expiration date');
-            isValid = false;
-        } else {
-            removeError(document.getElementById('expiry-error'));
-        }
-        
-        // Validate CVV
-        const cvv = document.getElementById('cvv').value;
-        if (!cvv || cvv.length < 3) {
-            displayError(document.getElementById('cvv-error'), 'Please enter a valid security code');
-            isValid = false;
-        } else {
-            removeError(document.getElementById('cvv-error'));
-        }
-        
-        // Create card details for Stripe
-        if (isValid) {
-            // This will be used to create a card element programmatically
-            const cardDetails = {
-                number: cardNumber,
-                exp_month: expiryMonth,
-                exp_year: expiryYear,
-                cvc: cvv
-            };
-            
-            // Store card details for later use with Stripe
-            window.customCardDetails = cardDetails;
-        }
-        
-        return isValid;
+        // This function can be removed as we're now using Stripe Elements
+        // It's only kept as a reference in case we need to switch back
+        return true;
     }
 
     // Create a PaymentMethod with custom card details
     async function createPaymentMethodFromCustomForm() {
-        try {
-            // Get values from custom form
-            const cardNumber = document.getElementById('cardNumber').value.replace(/\s/g, '');
-            const expiryMonth = document.getElementById('expiryMonth').value;
-            const expiryYear = document.getElementById('expiryYear').value;
-            const cvv = document.getElementById('cvv').value;
-            
-            // Create payment method directly with the card details
-            const {paymentMethod, error} = await stripe.createPaymentMethod({
-                type: 'card',
-                card: {
-                    number: cardNumber,
-                    exp_month: expiryMonth,
-                    exp_year: expiryYear,
-                    cvc: cvv
-                },
-                billing_details: getBillingDetails()
-            });
-            
-            if (error) {
-                displayError(document.getElementById('card-errors'), error.message);
-                throw error;
-            }
-            
-            return paymentMethod;
-        } catch (error) {
-            console.error('Error creating payment method:', error);
-            displayError(document.getElementById('card-errors'), error.message || 'An error occurred while processing your card.');
-            throw error;
-        }
+        // This function can be removed as we're now using Stripe Elements
+        // It's only kept as a reference in case we need to switch back
     }
-    
+
     // Get billing details from form
     function getBillingDetails() {
         const customerName = document.getElementById('ownerName').value;
