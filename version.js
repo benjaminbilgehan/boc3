@@ -5,7 +5,7 @@
  */
 
 const APP_VERSION = {
-    version: '1.0.7',
+    version: '1.0.8',
     releaseDate: '2025-03-30',
     buildTime: Date.now(),
     environment: window.location.hostname.includes('localhost') ? 'development' : 'production',
